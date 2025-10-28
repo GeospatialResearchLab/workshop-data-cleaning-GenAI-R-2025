@@ -1,8 +1,8 @@
 # AI Tools for Research: AI-Assisted Strategies for Cleaning and Preparing Research Data
 
 **Date**: October 2025
-**Hosted by**: Digital Research and Innovation Lab (AI in Research series)
-**Instructor**: Jessica Breen, PhD (Program Director, Geospatial Research Support)
+**Hosted by**: Digital Research and Innovation Lab (AI in Research series)  
+**Instructor**: Jessica Breen, PhD (Program Director, Geospatial Research Support)  
 **Tags**: AI • R • Prompt Engineering • Research Tools • Workshop
 
 ---
