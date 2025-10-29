@@ -15,9 +15,7 @@ This hands-on workshop introduces strategies for cleaning messy research data an
 
 ## Materials
 
-- **Data (CSV)**: [`Tatort_data.csv`](data/Tatort_data.csv)
-- **Slides (PDF)**: [`slides.pdf`](documents/slides.pdf)
-- **Handout (PDF)**: [`handout.pdf`](documents/handout.pdf)
+- **Zip File (ZIP)**: [`documents/materials.zip`](workshop_materials.zip)
 
 ---
 
