@@ -22,14 +22,11 @@ This hands-on workshop introduces strategies for cleaning messy research data an
 ---
 
 ## Topics Covered
-
-- Purpose and goals of data cleaning with R
+	
+- Identifying common issues in tabular datasets
+- Planning a reproducible data cleaning workflow
 - Describing datasets for AI collaboration
-- Prompting AI tools to write and debug R cleaning code
-- Step-by-step cleaning tasks
-	- Handling missing values and inconsistent formats
-	- Cleaning text and categorical data
-	- Parsing dates and removing duplicates
+- Prompting AI tools to write and debug R code
 - Documenting, testing, and saving reproducible workflows in R Notebooks
 
 ---
