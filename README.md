@@ -15,7 +15,7 @@ This hands-on workshop introduces strategies for cleaning messy research data an
 
 ## Materials
 
-- **Zip File (ZIP)**: [`documents/materials.zip`](workshop_materials.zip)
+- **Zip File (ZIP)**: [`documents/workshop_materials.zip`](workshop_materials.zip)
 
 ---
 
