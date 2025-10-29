@@ -1,0 +1,353 @@
+---
+title: "AI Tools for Research: AI-Assisted Strategies for Cleaning and Preparing Research Data"
+author: 
+  - name: Jessica Breen, PhD
+  - affilitation: American University
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: false
+    code-fold: false
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: visual
+---
+
+# Workshop Overview
+
+In this workshop, we’ll take a forensic approach to data cleaning — working carefully, systematically, and with full documentation at every step. After backing up your original data, we’ll begin by identifying the issues in the dataset. You’ll learn how to spot common problems that make data difficult to analyze: missing or incomplete records, inconsistent text formatting, incorrect data types, duplicated entries, and other irregularities that can distort your results. Instead of jumping straight to code, you’ll use R to explore the structure and contents of your dataset, take notes on what you see, and start categorizing the kinds of cleaning tasks that need to happen.
+
+Once we’ve identified the major issues, we’ll move to planning the cleanup. You’ll create a short, ordered list — a cleaning workflow — that describes what needs to be fixed and in what sequence. This is where reproducibility begins: a clear plan ensures that anyone could follow your process (including future you).
+
+With a plan in place, we’ll turn to using Generative AI tools such as GitHub Copilot or ChatGPT to help write R code for each cleaning step. You’ll describe what you’re trying to do, one task at a time — for example, standardizing capitalization, parsing dates, or removing duplicate rows. The AI will propose tidyverse code to accomplish that goal, and you’ll paste it into your R Notebook, run it, and inspect the results.
+
+This is an iterative process. Not every AI-generated solution will work perfectly the first time. You’ll learn to provide context and feedback — sharing error messages, small data samples, and your intent — so the AI can help you debug and refine your code. Each completed step will be documented in your notebook, along with short notes explaining what you did, why you did it, and how you verified that it worked.
+
+By the end of the session, you’ll have a notebook that functions both as a cleaned dataset and as a complete record of your data cleaning process — from first assessment to final, reproducible results. More importantly, you’ll leave with a transferable workflow you can reuse for future projects: observe, plan, prompt, test, debug, and document.
+
+------------------------------------------------------------------------
+
+# Learning Outcomes
+
+By the end of this workshop, participants will be able to:
+
+-   **Identify and categorize common data quality issues** — including missing values, inconsistent formats, duplicates, and incorrect data types — through structured exploration of a dataset in R.
+-   **Design a reproducible data cleaning workflow** that sequences cleaning tasks logically, documents decision-making, and preserves the integrity of the original dataset.
+-   **Collaborate effectively with Generative AI tools** (e.g., GitHub Copilot, ChatGPT) to generate, understand, and iteratively debug tidyverse-based R code for specific data cleaning tasks.
+-   **Document and verify the cleaning process in an R Notebook**, combining narrative text, executable code, and results to produce a transparent, reusable record of the workflow.
+
+------------------------------------------------------------------------
+
+# Secure the Scene
+
+Before any cleaning begins, your first responsibility is to preserve the original evidence. Think of your dataset as a crime scene — you wouldn’t start wiping things down before documenting what’s there. The same rule applies here: you never work directly on your raw data. Instead, create a clearly labeled working copy (including a date or version number) and use that for all cleaning and experimentation.
+
+This step is about protecting data integrity and ensuring reproducibility. If something goes wrong — a column deleted, a value overwritten — you can always return to the untouched original. Maintaining this “chain of custody” gives you confidence that every change you make is deliberate, recorded, and reversible. It’s the foundation for the rest of your workflow.
+
+## Dos and Don'ts
+
+-   **Do not modify** the original (“raw”) dataset.
+-   **Do** create a clearly named **working copy** with date/version in the filename.
+-   **Do** keep a simple **change log** (what/why) as you go.
+
+```{r}
+# Create a backup copy of the raw dataset
+file.copy("tatort_dirty.csv", "tatort_dirty_original.csv", overwrite = FALSE)
+
+# Confirm the backup exists
+file.exists("tatort_dirty_original.csv")
+```
+
+------------------------------------------------------------------------
+
+# Survey the Damage & Identify Common Issues
+
+With your working copy safely in place, the next step is to **survey the damage** — to get an initial sense of what you’re dealing with. At this stage, you’re not cleaning or even analyzing; you’re simply opening the dataset to see what it looks like inside R.
+
+This first look helps you start noticing patterns: columns with missing values, inconsistent spellings, formatting quirks, or data that doesn’t seem to belong. Don’t worry about fixing anything yet — just begin forming a mental picture of the dataset’s condition.
+
+Think of this as your **walkthrough of the scene**: you’re confirming what’s in front of you, noting where the data might be messy, and getting oriented before you start planning the cleanup. Loading the data is like lifting the tape at the edge of the scene — from here, we can begin documenting what needs attention.
+
+```{r}
+# Load the Tatort dataset
+library(readr)
+
+# Read the CSV file from the current working directory
+tatort <- read_csv("tatort_dirty.csv", show_col_types = TRUE)
+
+# Take a quick look at the data in the Environment or Viewer
+tatort
+```
+
+### Common Issues
+
+| Issue            | Description                                |
+|------------------|--------------------------------------------|
+| **Missing data** | Blanks / `NA` / incomplete records         |
+| **Bad formats**  | Inconsistent capitalization or date styles |
+| **Type errors**  | Numbers stored as text (or vice versa)     |
+| **Duplicates**   | Repeated/conflicting rows                  |
+| **Aliases**      | Multiple spellings or abbreviations        |
+| **Outliers**     | Impossible/extreme values                  |
+
+------------------------------------------------------------------------
+
+# Plan the Cleanup (Order of Operations)
+
+Now that you’ve seen the condition of your dataset, it’s time to plan the cleanup. Instead of diving in to fix problems as you find them, you’ll take a few minutes to decide on a clear order of operations — what needs to be fixed, and in what sequence.
+
+This planning step is what turns data cleaning from guesswork into a reproducible process. You’re creating a roadmap that you (or anyone else) can follow later, ensuring the same steps lead to the same outcome. Think of it as writing your case notes before you start processing the evidence: you’re outlining how you’ll restore the dataset to a usable state.
+
+In this workshop, that plan will guide how you work with the AI. You’ll start by listing the major issues you noticed in your dataset — things like missing values, inconsistent capitalization, or duplicate records — then number them in the order you want to address them. From there, you’ll go task by task, using the AI to help generate and refine R code for each step.
+
+By making this plan first, you’ll keep your workflow organized, make debugging easier, and end up with R code that’s modular and reusable for future projects.
+
+### Typical Workflow Plan
+
+| Step | Task | Description |
+|:-----------------:|:------------------|:---------------------------------|
+| 1 | **Remove irrelevant rows/columns** | Keep only the data you need for analysis. |
+| 2 | **Handle missing values** | Decide how to fill, flag, or remove incomplete records. |
+| 3 | **Correct data types** | Ensure numbers, text, and dates are stored correctly. |
+| 4 | **Standardize text & categories** | Make capitalization, spelling, and formats consistent. |
+| 5 | **Remove duplicates** | Identify and eliminate repeated or conflicting entries. |
+| 6 | **Save & document** | Record your cleaning steps and save the cleaned dataset. |
+
+------------------------------------------------------------------------
+
+# Briefing Your AI Assistant
+
+Before we start generating any code, we need to set the scene for your AI Assistant. This is where you tell the AI what you’re working on, what your data looks like, and how you want it to respond. Dong this will make your assistant far more accurate and produce cleaner, more reusable R code.
+
+A well-structured setup prompt ensures the AI knows:
+
+-   What your dataset represents
+-   What tools you’re using
+-   What your variables look like
+-   What kind of code output you expect
+
+### Example Setup Prompt
+
+> I’m working with a tabular dataset of TV episodes from the German show Tatort. Each row represents one episode.
+>
+> I want to clean and prepare this data for analysis.
+>
+> Here are the columns and their data types:
+>
+> -   Folge — numeric
+> -   Titel — character
+> -   Sender — character
+> -   Erstausstrahlung — character
+> -   Ermittler — character
+> -   Fall — numeric
+> -   Autor — character
+> -   Regie — character
+> -   Besonderheiten — character
+>
+> Help me write tidyverse R code that performs one cleaning task at a time (for example, standardizing capitalization or fixing date formats). Each code block should be well-commented and easy to understand.
+
+## Record Your Prompt
+
+It’s good practice to record your setup prompt in your R Notebook before you start generating code. This captures how you described your dataset, tools, and goals to the AI — an important part of reproducible research.
+
+Saving this prompt in the notebook means that anyone reading your work (including future you) will know how you framed the problem and what information the AI was given. If your results ever need to be recreated or explained, you’ll have a clear record of the context behind the generated code.
+
+------------------------------------------------------------------------
+
+**Your Setup Prompt:**
+
+> (Type or paste it here)
+
+------------------------------------------------------------------------
+
+Need help getting the names and data types of your file? Use this code and cut and paste the output into your prompt.
+
+```{r}
+# Generate a clean, copyable column summary for AI setup prompt
+col_summary <- data.frame(
+  column = names(tatort),
+  type = sapply(tatort, class),
+  row.names = NULL
+)
+
+# Print it in a markdown-friendly format
+cat("**Column Summary for AI Prompt**\n\n")
+apply(col_summary, 1, function(x) {
+  cat(paste0("- `", x[1], "` — ", x[2], "\n"))
+})
+```
+
+------------------------------------------------------------------------
+
+# Building a Reproducible Process
+
+Once you’ve given the AI context for your dataset and created your cleaning plan, it’s time to begin the work — one task at a time. This step is where you start putting your plan into action in a deliberate, documented way.
+
+Each cleaning task should be treated as a small, self-contained step in your workflow. Each AI request should focus on a single issue. The most effective prompts follow a simple two-part pattern:
+
+-   Describe the problem — what you observed in the data that needs attention.
+-   Describe the resolution — what you want the cleaned version to look like.
+
+This approach helps the AI understand your intent, produces cleaner code, and reinforces your own understanding of how and why each transformation happens.
+
+### Example Task Prompt
+
+> In my dataset, some of the entries in the “Titel” column are written in all uppercase (for example, “DAS ENDE”).\
+> I want to fix this so that all titles appear in regular case (for example, “Das Ende”).
+
+## View the Data (Did it work?)
+
+After running the AI-generated code, take a moment to look at your dataset and confirm what changed.
+
+You don’t need to check every column or run complex summaries — just make sure the results look right. Use simple commands like head() to see the first few rows, or glimpse() to scan the structure and spot anything unexpected.
+
+The goal here is to see the effect of your cleaning step before moving on to the next one.
+
+## A Quick Note on Viewing Data in R
+
+To look at your data in R, you’ll use a few simple tools that come built into the language or through the dplyr library (part of the tidyverse). • dplyr is one of the core tidyverse packages for working with data frames. It provides clear, readable commands for viewing, filtering, and summarizing data. We’ll use it here for its glimpse() function. • head() shows the first few rows of your dataset. It’s a quick way to check that your data loaded correctly or to see how a cleaning step changed your values. • glimpse() gives you a compact summary of your dataset — it lists all the columns, their data types (text, number, etc.), and sample values. It’s especially useful for spotting problems like a numeric column that was accidentally read in as text.
+
+These tools let you see what’s happening in your dataset after each cleaning step, without scrolling through hundreds of rows.
+
+```{r}
+# Load dplyr for the 'glimpse()' function, which gives a compact overview of your data
+library(dplyr)
+
+# View the first 50 rows of the dataset to see how the data looks after cleaning
+head(tatort, 50)
+
+# Get a structured summary of the dataset:
+# - shows column names, data types, and example values
+# - useful for spotting unexpected changes in data types or content
+glimpse(tatort)
+```
+
+If everything looks the way you expected — great! You’ve successfully completed a cleaning step and can move on to the next task in your plan.
+
+If something doesn’t look right, don’t worry. Small mistakes or unexpected results are part of the process.
+
+------------------------------------------------------------------------
+
+# Debugging — Iteration Is Normal
+
+Even with a clear plan and a good prompt, your code won’t always work perfectly the first time — and that’s completely normal. Debugging is part of the process, not a failure of it. Think of it as another kind of detective work: gathering clues, testing hypotheses, and refining your approach until the code behaves as intended.
+
+When something doesn’t work, resist the urge to start over or copy random fixes. Instead, take a structured approach to describe what happened and give the AI enough context to help you correct it.
+
+## When You Get an Error
+
+If R throws an error, the AI can’t see it unless you tell it what happened. Always copy and share:
+
+1.  The last line of output (especially any red error message).
+
+2.  The code that caused it.
+
+Then, frame your follow-up prompt clearly. For example:
+
+> The code you provided returned this error: Error in mutate(): object 'Sender' not found
+>
+> Here’s the code that produced it: tatort \<- tatort %\>% mutate(Sender = str_to_title(Sender))
+>
+> Can you help me fix it?
+
+## When the Code Runs but the Result Isn’t Right
+
+Sometimes the code runs without an error, but the data still doesn’t look how you expected. In that case, describe what actually happened and how it differs from what you wanted. For example:
+
+> The code ran without errors, but it changed every entry in “Titel” to lowercase instead of regular case. I want the first letter of each word capitalized (for example, “das ende” → “Das Ende”). Can you adjust the code?
+
+## Remember
+
+Debugging is an iterative conversation — each exchange brings you closer to understanding both your data and your code. Take notes in your notebook about what went wrong and how you fixed it. Those details are part of your reproducible workflow and a valuable record for the next time you encounter a similar problem.
+
+------------------------------------------------------------------------
+
+# Saving Your Data — Finishing the Case File
+
+Your cleaning process isn’t complete until your cleaned dataset is safely saved as a new file. All the work you’ve done so far — the planning, prompting, debugging, and verifying — lives only inside your R session until you explicitly export the data.
+
+Think of this as closing the case file: the cleaned data is your final evidence, and it needs to be properly labeled and preserved.
+
+## Saving Your Work
+
+When you’re ready, prompt the AI to help you write code that saves your dataset. Be sure to include the file name and file type you want to use for this new data file. Saving to a new file protects your cleaned data and ensures that your original raw file remains unchanged. Never overwrite your original dataset — it’s your reference point if anything goes wrong later.
+
+```{r}
+# Use write_csv() from the readr package (part of the tidyverse)
+library(readr)
+
+# Save the cleaned dataset to a new file called "tatort_clean.csv"
+# The file will be saved in your current working directory.
+write_csv(tatort, "tatort_clean.csv")
+```
+
+## Review Before You Save
+
+Before you finish, take a few minutes to make sure your notebook tells the full story of what you did: - Have you included short text notes describing what you were trying to do and why? - Are your R code chunks commented clearly enough that you could understand them later (or that someone else could follow your process)? - Does each step include evidence of what changed or how you verified it?
+
+Your notebook and your exported file together form the complete, reproducible record of your data cleaning process — something you (and others) can trust and reuse.
+
+------------------------------------------------------------------------
+
+# Practice Section
+
+## Cleaning Workflow
+
+-   Task 1
+
+-   Task 2
+
+-   Task 3
+
+## Setup Prompt:
+
+> Paste your prompt here
+
+## Task 1:
+
+> Describe the task you're working on.
+
+## Prompt:
+
+> Paste the prompt you used here
+
+## R code
+
+```{r}
+# Paste the R code provided by the AI here
+
+```
+
+## Task 2:
+
+> Describe the task you're working on.
+
+## Prompt:
+
+> Paste the prompt you used here
+
+## R code
+
+```{r}
+# Paste the R code provided by the AI here
+
+```
+
+## Task 3:
+
+> Describe the task you're working on.
+
+## Prompt:
+
+> Paste the prompt you used here
+
+## R code
+
+```{r}
+# Paste the R code provided by the AI here
+
+```
